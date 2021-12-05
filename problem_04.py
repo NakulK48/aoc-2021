@@ -51,7 +51,7 @@ class Board:
         return total
 
 def get_sections():
-    text = Path("problem_04.txt").read_text()
+    text = Path("problem_04.txt").read_text().strip()
     return text.split("\n\n")
 
 def get_nums_and_boards():
