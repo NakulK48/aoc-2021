@@ -13,7 +13,12 @@ def get_signals_and_outputs():
 
     return result
 
-UNAMBIGUOUS_LENGTHS = (2, 3, 4, 7)
+UNAMBIGUOUS_LENGTHS = {
+    2: 1,
+    3: 7,
+    4: 4,
+    7: 8,
+}
 
 def part_a():
     signals_and_outputs = get_signals_and_outputs()
@@ -24,45 +29,8 @@ def part_a():
                 total += 1
     return total
 
-# Encode as:
-
-#  1
-# 2 3
-#  4
-# 5 6
-#  7
-
-SEGMENTS_TO_DIGIT = {
-    "36": 1,
-    "13457": 2,
-    "134567": 3,
-    "2346": 4,
-    "12467": 5,
-    "124567": 6,
-    "136": 7,
-    "1234567": 8,
-    "123467": 9
-}
-
-LENGTH_TO_DIGITS = {
-    2: [1],
-    3: [7],
-    4: [4],
-    5: [2, 3, 5],
-    6: [0, 6, 9],
-    7: [8]
-}
-
 def segment_overlap(first, second):
     return len(set(first) & set(second))
-
-"""
-a cde g 2
-a cd fg 3
-ab d fg 5
-
- bcd f  4
-"""
 
 def part_b():
     signals_and_outputs = get_signals_and_outputs()
@@ -73,7 +41,7 @@ def part_b():
         for segments in signal:
             length = len(segments)
             if length in UNAMBIGUOUS_LENGTHS:
-                [digit] = LENGTH_TO_DIGITS[length]
+                digit = UNAMBIGUOUS_LENGTHS[length]
                 segments_to_digit[segments] = digit
                 digit_to_segments[digit] = segments
         for segments in signal:
