@@ -30,6 +30,17 @@ def part_a():
 def segment_overlap(first, second):
     return len(set(first) & set(second))
 
+
+DIGIT_PICKER = {
+    # length, overlap1, overlap4
+    (6, 1, 3): 6,
+    (6, 2, 3): 0,
+    (6, 2, 4): 9,
+    (5, 1, 2): 2,
+    (5, 2, 3): 3,
+    (5, 1, 3): 5
+}
+
 def part_b():
     total = 0
     for signal, output in get_signals_and_outputs():
@@ -48,15 +59,7 @@ def part_b():
             overlap1 = segment_overlap(segments, digit_to_segments[1])
             overlap4 = segment_overlap(segments, digit_to_segments[4])
 
-            segments_to_digit[segments] = {
-                # length, overlap1, overlap4
-                (6, 1, 3): 6,
-                (6, 2, 3): 0,
-                (6, 2, 4): 9,
-                (5, 1, 2): 2,
-                (5, 2, 3): 3,
-                (5, 1, 3): 5
-            }[length, overlap1, overlap4]
+            segments_to_digit[segments] = DIGIT_PICKER[length, overlap1, overlap4]
         assert sorted(segments_to_digit.values()) == list(range(10))
 
         output_digits = [str(segments_to_digit[segments]) for segments in output]
