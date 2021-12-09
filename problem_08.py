@@ -21,21 +21,18 @@ UNAMBIGUOUS_LENGTHS = {
 }
 
 def part_a():
-    signals_and_outputs = get_signals_and_outputs()
-    total = 0
-    for _, output in signals_and_outputs:
-        for digit in output:
-            if len(digit) in UNAMBIGUOUS_LENGTHS:
-                total += 1
-    return total
+    return sum(
+        1
+        for _, output in get_signals_and_outputs()
+        for digit in output if len(digit) in UNAMBIGUOUS_LENGTHS
+    )
 
 def segment_overlap(first, second):
     return len(set(first) & set(second))
 
 def part_b():
-    signals_and_outputs = get_signals_and_outputs()
     total = 0
-    for signal, output in signals_and_outputs:
+    for signal, output in get_signals_and_outputs():
         segments_to_digit = {}
         digit_to_segments = {}
         for segments in signal:
@@ -45,30 +42,25 @@ def part_b():
                 segments_to_digit[segments] = digit
                 digit_to_segments[digit] = segments
         for segments in signal:
-            if len(segments) == 6:
-                # 0, 6 or 9
-                overlap1 = segment_overlap(segments, digit_to_segments[1])
-                if overlap1 == 1:
-                    digit = 6
-                else:
-                    overlap4 = segment_overlap(segments, digit_to_segments[4])
-                    digit = 0 if overlap4 == 3 else 9
-                segments_to_digit[segments] = digit
-            if len(segments) == 5:
-                # 2, 3 or 5
-                overlap4 = segment_overlap(segments, digit_to_segments[4])
-                if overlap4 == 2:
-                    digit = 2
-                else:
-                    overlap1 = segment_overlap(segments, digit_to_segments[1])
-                    digit = 3 if overlap1 == 2 else 5
-                segments_to_digit[segments] = digit
+            length = len(segments)
+            if length not in (5, 6):
+                continue
+            overlap1 = segment_overlap(segments, digit_to_segments[1])
+            overlap4 = segment_overlap(segments, digit_to_segments[4])
+
+            segments_to_digit[segments] = {
+                # length, overlap1, overlap4
+                (6, 1, 3): 6,
+                (6, 2, 3): 0,
+                (6, 2, 4): 9,
+                (5, 1, 2): 2,
+                (5, 2, 3): 3,
+                (5, 1, 3): 5
+            }[length, overlap1, overlap4]
         assert sorted(segments_to_digit.values()) == list(range(10))
-        
-        output_digits = ""
-        for segments in output:
-            output_digits += str(segments_to_digit[segments])
-        total += int(output_digits)
+
+        output_digits = [str(segments_to_digit[segments]) for segments in output]
+        total += int("".join(output_digits))
     return total
 
 print(part_a())
