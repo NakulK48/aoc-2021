@@ -10,13 +10,15 @@ class Grid:
         self.width = len(self.grid[0])
     
     def get(self, x, y):
-        if x < 0 or x >= self.height or y < 0 or y >= self.width:
-            return float("inf")
         return self.grid[x][y]
 
     def neighbours(self, x, y):
         adjacent = [(x-1, y), (x+1, y), (x, y-1), (x, y+1)]
-        return [pos for pos in adjacent if x < self.height and y < self.width]
+        return [
+            (x2, y2) for (x2, y2) in adjacent
+            if 0 <= x2 < self.height
+            and 0 <= y2 < self.width
+        ]
 
     def is_lowest(self, x, y):
         current = self.get(x, y)
