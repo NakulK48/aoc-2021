@@ -1,7 +1,7 @@
 from collections import deque
 import itertools
 from pathlib import Path
-from typing import Deque, List, Set, Tuple
+from typing import Deque, List, Iterator, Set, Tuple
 
 Position = Tuple[int, int]
 
@@ -13,7 +13,12 @@ class Grid:
         self.size = self.height * self.width
         self.flashes = 0
     
-    def get(self, x: int, y: int):
+    def __iter__(self) -> Iterator[Position]:
+        for x in range(self.height):
+            for y in range(self.width):
+                yield (x, y)
+
+    def get(self, x: int, y: int) -> int:
         return self.grid[x][y]
 
     def increment(self, x: int, y: int):
@@ -43,13 +48,9 @@ class Grid:
     def iterate_and_count_flashes(self) -> int:
         has_flashed: Set[Position] = set()
         hit_by_flash: Deque[Position] = deque()
-        for x in range(self.height):
-            for y in range(self.width):
-                self.increment(x, y)
-        for x in range(self.height):
-            for y in range(self.width):
-                pos = (x, y)
-                hit_by_flash += self.maybe_flash(pos, has_flashed)
+        for pos in self:
+            self.increment(*pos)
+            hit_by_flash += self.maybe_flash(pos, has_flashed)
         while hit_by_flash:
             pos = hit_by_flash.popleft()
             self.increment(*pos)
