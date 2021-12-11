@@ -1,0 +1,78 @@
+from collections import deque
+import itertools
+from pathlib import Path
+
+class Grid:
+    def __init__(self, raw):
+        self.grid = [[int(c) for c in line] for line in raw.split("\n")]
+        self.height = len(self.grid)
+        self.width = len(self.grid[0])
+        self.size = self.height * self.width
+        self.flashes = 0
+    
+    def get(self, x, y):
+        return self.grid[x][y]
+
+    def increment(self, x, y):
+        self.grid[x][y] += 1
+
+    def zero(self, x, y):
+        self.grid[x][y] = 0
+
+    def neighbours(self, x, y):
+        return [
+            (x+xdiff, y+ydiff)
+            for xdiff in range(-1, 2)
+            for ydiff in range(-1, 2)
+            if 0 <= x+xdiff < self.height
+            and 0 <= y+ydiff < self.width
+            and (xdiff, ydiff) != (0, 0)
+        ]
+
+    def maybe_flash(self, pos, has_flashed):
+        current = self.get(*pos)
+        if current <= 9 or pos in has_flashed:
+            return []
+        has_flashed.add(pos)
+        self.flashes += 1
+        return self.neighbours(*pos)
+
+    def iterate_and_count_flashes(self):
+        has_flashed = set()
+        hit_by_flash = deque()
+        for x in range(self.height):
+            for y in range(self.width):
+                self.increment(x, y)
+        for x in range(self.height):
+            for y in range(self.width):
+                pos = (x, y)
+                hit_by_flash += self.maybe_flash(pos, has_flashed)
+        while hit_by_flash:
+            pos = hit_by_flash.popleft()
+            self.increment(*pos)
+            hit_by_flash += self.maybe_flash(pos, has_flashed)
+        for pos in has_flashed:
+            self.zero(*pos)
+        return len(has_flashed)
+
+
+def load_grid():
+    text = Path("problem_11.txt").read_text().strip()
+    return Grid(text)
+
+def part_a():
+    grid = load_grid()
+    for _ in range(100):
+        grid.iterate_and_count_flashes()
+    return grid.flashes
+
+def part_b():
+    grid = load_grid()
+    for step in itertools.count(start=1):
+        if grid.iterate_and_count_flashes() == grid.size:
+            break
+    return step
+
+
+print(part_a())
+print(part_b())
