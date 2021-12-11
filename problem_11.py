@@ -1,25 +1,28 @@
 from collections import deque
 import itertools
 from pathlib import Path
+from typing import Deque, List, Set, Tuple
+
+Position = Tuple[int, int]
 
 class Grid:
-    def __init__(self, raw):
+    def __init__(self, raw: str):
         self.grid = [[int(c) for c in line] for line in raw.split("\n")]
         self.height = len(self.grid)
         self.width = len(self.grid[0])
         self.size = self.height * self.width
         self.flashes = 0
     
-    def get(self, x, y):
+    def get(self, x: int, y: int):
         return self.grid[x][y]
 
-    def increment(self, x, y):
+    def increment(self, x: int, y: int):
         self.grid[x][y] += 1
 
-    def zero(self, x, y):
+    def zero(self, x: int, y: int):
         self.grid[x][y] = 0
 
-    def neighbours(self, x, y):
+    def neighbours(self, x: int, y: int) -> List[Position]:
         return [
             (x+xdiff, y+ydiff)
             for xdiff in range(-1, 2)
@@ -29,7 +32,7 @@ class Grid:
             and (xdiff, ydiff) != (0, 0)
         ]
 
-    def maybe_flash(self, pos, has_flashed):
+    def maybe_flash(self, pos: Position, has_flashed: Set[Position]) -> List[Position]:
         current = self.get(*pos)
         if current <= 9 or pos in has_flashed:
             return []
@@ -37,9 +40,9 @@ class Grid:
         self.flashes += 1
         return self.neighbours(*pos)
 
-    def iterate_and_count_flashes(self):
-        has_flashed = set()
-        hit_by_flash = deque()
+    def iterate_and_count_flashes(self) -> int:
+        has_flashed: Set[Position] = set()
+        hit_by_flash: Deque[Position] = deque()
         for x in range(self.height):
             for y in range(self.width):
                 self.increment(x, y)
@@ -56,17 +59,17 @@ class Grid:
         return len(has_flashed)
 
 
-def load_grid():
+def load_grid() -> Grid:
     text = Path("problem_11.txt").read_text().strip()
     return Grid(text)
 
-def part_a():
+def part_a() -> int:
     grid = load_grid()
     for _ in range(100):
         grid.iterate_and_count_flashes()
     return grid.flashes
 
-def part_b():
+def part_b() -> int:
     grid = load_grid()
     for step in itertools.count(start=1):
         if grid.iterate_and_count_flashes() == grid.size:
