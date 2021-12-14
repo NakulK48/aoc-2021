@@ -14,16 +14,14 @@ def get_chain_and_rules() -> Tuple[List[str], Dict[str, str]]:
 
 def part_a():
     chain, rules = get_chain_and_rules()
-    for iteration in range(10):
+    for _ in range(10):
         index = 0
         while index < (len(chain) - 1):
             this_pair = chain[index] + chain[index + 1]
             chain.insert(index + 1, rules[this_pair])
             index += 2
-    most_common = Counter(chain).most_common()
-    (_, highest_count) = most_common[0]
-    (_, lowest_count) = most_common[-1]
-    return highest_count - lowest_count
+    counter = Counter(chain)
+    return max(counter.values()) - min(counter.values())
 
 
 def get_pair_to_frequency(chain: List[str]):
