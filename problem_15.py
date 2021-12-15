@@ -1,6 +1,8 @@
+import heapq
 import math
+import time
+
 from pathlib import Path
-from queue import PriorityQueue
 from typing import List
 
 def get_new_cell(cell: int, iteration: int):
@@ -75,18 +77,16 @@ def load_repeated_cavern() -> Grid:
 def get_cavern_result(cavern: Grid):
     distance = Grid.distance_grid(cavern)
     visited = set()
-    queue = PriorityQueue()
+    queue = [(0, (0, 0))]
 
-    queue.put((0, (0, 0)))
-
-    while not queue.empty():
-        pos_distance, pos = queue.get()
+    while queue:
+        pos_distance, pos = heapq.heappop(queue)
         if pos in visited:
             continue
         for neighbour in cavern.neighbours(*pos):
             new_dist = pos_distance + cavern.get(*neighbour)
             final_dist = distance.set_if_lower(new_dist, *neighbour)
-            queue.put((final_dist, neighbour))
+            heapq.heappush(queue, (final_dist, neighbour))
 
         visited.add(pos)
 
@@ -101,5 +101,7 @@ def part_b():
     cavern = load_repeated_cavern()
     return get_cavern_result(cavern)
 
+start = time.time()
 print(part_a())
 print(part_b())
+print(f"Ran in {time.time() - start}s")
