@@ -1,3 +1,4 @@
+import math
 from pathlib import Path
 from queue import PriorityQueue
 from typing import List
@@ -7,6 +8,10 @@ def get_new_cell(cell: int, iteration: int):
     if base > 9:
         return base - 9
     return base
+
+def build_2d_array(width: int, height: int, elem: int = 0):
+    return [[elem for _ in range(width)] for __ in range(height)]
+
 
 class Grid:
     def __init__(self, raw_grid: List[List[int]]):
@@ -21,32 +26,28 @@ class Grid:
 
     @staticmethod
     def from_repeated_string(raw: str) -> "Grid":
-        base_raw_grid = []
-        for line in raw.split("\n"):
-            base_line = [int(c) for c in line]
-            result_line = []
-            for iteration in range(5):
-                result_line += [get_new_cell(cell, iteration) for cell in base_line]
-            base_raw_grid.append(result_line)
-        raw_grid = []
-        for iteration in range(5):
-            for line in base_raw_grid:
-                new_line = [get_new_cell(cell, iteration) for cell in line]
-                raw_grid.append(new_line)
+        base = Grid.from_string(raw)
+        width, height = base.width, base.height
+        raw_grid = build_2d_array(width * 5, height * 5)
+        for x, row in enumerate(raw_grid):
+            for y in range(len(row)):
+                raw_grid[x][y] = get_new_cell(
+                    cell=base.get_modulo(x, y),
+                    iteration=(x // width) + (y // height)
+                )
         return Grid(raw_grid)
-
 
     @staticmethod
     def distance_grid(basis: "Grid") -> "Grid":
-        raw_grid = [
-            [float("inf") for _ in range(basis.width)]
-            for __ in range(basis.height)
-        ]
+        raw_grid = build_2d_array(basis.width, basis.height, math.inf)
         raw_grid[0][0] = 0
         return Grid(raw_grid)
 
     def get(self, x, y):
         return self.grid[x][y]
+
+    def get_modulo(self, x, y):
+        return self.grid[x % self.width][y % self.height]
 
     def set_if_lower(self, new_value, x, y):
         self.grid[x][y] = min(self.grid[x][y], new_value)
@@ -82,8 +83,7 @@ def get_cavern_result(cavern: Grid):
         pos_distance, pos = queue.get()
         if pos in visited:
             continue
-        neighbours = cavern.neighbours(*pos)
-        for neighbour in neighbours:
+        for neighbour in cavern.neighbours(*pos):
             new_dist = pos_distance + cavern.get(*neighbour)
             final_dist = distance.set_if_lower(new_dist, *neighbour)
             queue.put((final_dist, neighbour))
