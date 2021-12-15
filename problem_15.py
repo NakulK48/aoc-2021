@@ -52,8 +52,8 @@ class Grid:
         return self.grid[x % self.width][y % self.height]
 
     def set_if_lower(self, new_value, x, y):
-        self.grid[x][y] = min(self.grid[x][y], new_value)
-        return self.grid[x][y]
+        self.grid[x][y] = result = min(self.grid[x][y], new_value)
+        return result
 
     def neighbours(self, x, y):
         adjacent = [(x-1, y), (x+1, y), (x, y-1), (x, y+1)]
@@ -84,6 +84,8 @@ def get_cavern_result(cavern: Grid):
         if pos in visited:
             continue
         for neighbour in cavern.neighbours(*pos):
+            if neighbour in visited:
+                continue
             new_dist = pos_distance + cavern.get(*neighbour)
             final_dist = distance.set_if_lower(new_dist, *neighbour)
             heapq.heappush(queue, (final_dist, neighbour))
