@@ -49,8 +49,7 @@ class Grid:
         return self.grid[x][y]
 
     def set_if_lower(self, new_value, x, y):
-        old_value = self.grid[x][y]
-        self.grid[x][y] = min(old_value, new_value)
+        self.grid[x][y] = min(self.grid[x][y], new_value)
         return self.grid[x][y]
 
     def neighbours(self, x, y):

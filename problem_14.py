@@ -24,7 +24,7 @@ def part_a():
     return max(counter.values()) - min(counter.values())
 
 
-def get_pair_to_frequency(chain: List[str]):
+def get_pair_counts(chain: List[str]):
     return Counter(
         chain[i] + chain[i+1]
         for i in range(len(chain) - 1)
@@ -33,27 +33,18 @@ def get_pair_to_frequency(chain: List[str]):
 
 def part_b():
     chain, rules = get_chain_and_rules()
-    last_char = chain[-1]
-    pair_to_frequency = get_pair_to_frequency(chain)
+    pair_counts = get_pair_counts(chain)
+    char_counts = Counter(chain)
     for _ in range(40):
-        new_pair_to_frequency = defaultdict(int)
-        for pair, current_freq in pair_to_frequency.items():
+        new_pair_counts = defaultdict(int)
+        for pair, current_freq in pair_counts.items():
             new_element = rules[pair]
-            new_pair_to_frequency[pair[0] + new_element] += current_freq
-            new_pair_to_frequency[new_element + pair[1]] += current_freq
-        pair_to_frequency = new_pair_to_frequency
-    
-    # only count the first in the pair to avoid double counting
-    char_to_frequency = defaultdict(int)
-    for pair, pair_frequency in pair_to_frequency.items():
-        char_to_frequency[pair[0]] += pair_frequency
+            char_counts[new_element] += current_freq
+            new_pair_counts[pair[0] + new_element] += current_freq
+            new_pair_counts[new_element + pair[1]] += current_freq
+        pair_counts = new_pair_counts
 
-    # the last char is never first in the pair
-    char_to_frequency[last_char] += 1
-
-    max_freq = max(char_to_frequency.values())
-    min_freq = min(char_to_frequency.values())
-    return (max_freq - min_freq)
+    return (max(char_counts.values()) - min(char_counts.values()))
 
 print(part_a())
 print(part_b())
