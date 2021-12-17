@@ -28,7 +28,7 @@ def max_ypos(xvel_initial, yvel_initial, target):
 
 def part_a():
     target = (xmin, xmax, ymin, ymax) = get_target()
-    for yvel_initial in range(200, 0, -1):
+    for yvel_initial in range(-ymin, 0, -1):
         for xvel_initial in range(xmax):
             maximum_height = max_ypos(xvel_initial, yvel_initial, target)
             if maximum_height is not None:
@@ -39,7 +39,7 @@ def part_a():
 def part_b():
     target = (xmin, xmax, ymin, ymax) = get_target()
     count = 0
-    for yvel_initial in range(ymin, 200):
+    for yvel_initial in range(ymin, -ymin):
         for xvel_initial in range(xmax + 1):
             if max_ypos(xvel_initial, yvel_initial, target) is not None:
                 count += 1
