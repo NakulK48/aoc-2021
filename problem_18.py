@@ -73,7 +73,7 @@ class Snail:
     def is_leaf(self):
         return self.value is not None
 
-    def reduce(self) -> bool:  # returns whether a change took place.
+    def split(self):
         if self.is_leaf:
             if self.value >= 10:
                 self.left = self.make_child(self.value // 2)
@@ -82,28 +82,43 @@ class Snail:
                 return True
             return False
         else:
-            if self.left.reduce():
-                return True
-            if self.depth >= 3:
-                if not self.left.is_leaf:  # try exploding this first
-                    next_node_right = self.right.leftmost()
-                    next_node_right.value += self.left.right.value
-                    predecessor_leaf = self.predecessor_leaf_node()
-                    if predecessor_leaf is not None:
-                        predecessor_leaf.value += self.left.left.value
-                    self.left = self.make_child(0)
-                    return True
-                elif not self.right.is_leaf:
-                    next_node_left = self.left.rightmost()
-                    next_node_left.value += self.right.left.value
-                    successor_leaf = self.successor_leaf_node()
-                    if successor_leaf is not None:
-                        successor_leaf.value += self.right.right.value
-                    self.right = self.make_child(0)
-                    return True
-            if self.right.reduce():
-                return True
+            return (self.left.split() or self.right.split())
+
+    def can_explode(self):
+        if self.is_leaf:
             return False
+        if self.depth >= 3 and not (self.left.is_leaf and self.right.is_leaf):
+            return True
+        return self.left.can_explode() or self.right.can_explode()
+
+    def can_split(self):
+        if self.is_leaf:
+            return self.value >= 10
+        return self.left.can_split() or self.right.can_split()
+
+    def explode(self) -> bool:  # returns whether a change took place.
+        if self.is_leaf:
+            return False
+        if self.left.explode():
+            return True
+        if self.depth >= 3:
+            if not self.left.is_leaf:  # try exploding this first
+                next_node_right = self.right.leftmost()
+                next_node_right.value += self.left.right.value
+                predecessor_leaf = self.predecessor_leaf_node()
+                if predecessor_leaf is not None:
+                    predecessor_leaf.value += self.left.left.value
+                self.left = self.make_child(0)
+                return True
+            elif not self.right.is_leaf:
+                next_node_left = self.left.rightmost()
+                next_node_left.value += self.right.left.value
+                successor_leaf = self.successor_leaf_node()
+                if successor_leaf is not None:
+                    successor_leaf.value += self.right.right.value
+                self.right = self.make_child(0)
+                return True
+        return self.right.explode()
 
     def __str__(self):
         if self.value is not None:
@@ -126,20 +141,21 @@ def add_snails(first: Snail, second: Snail):
 
 
 def reduce_snail(snail: Snail):
-    keep_reducing = True
-    while keep_reducing:
-        keep_reducing = snail.reduce()
+    while True:
+        if snail.can_explode():
+            snail.explode()
+        elif snail.can_split():
+            snail.split()
+        else:
+            break
 
 
 def part_a():
     snails = get_snails()
     snail_so_far = snails.pop(0)
-    reduce_snail(snail_so_far)
     for new_snail in snails:
-        reduce_snail(new_snail)
         snail_so_far = add_snails(snail_so_far, new_snail)
         reduce_snail(snail_so_far)
-    print(snail_so_far)
     return snail_so_far.magnitude()
 
 print(part_a())
