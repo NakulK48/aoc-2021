@@ -1,5 +1,7 @@
 import math
 from ast import literal_eval
+from copy import deepcopy
+import itertools
 from pathlib import Path
 from typing import List, Optional, Union
 
@@ -158,4 +160,15 @@ def part_a():
         reduce_snail(snail_so_far)
     return snail_so_far.magnitude()
 
-print(part_a())
+def part_b():
+    snails = get_snails()
+    best_so_far = 0
+    for left, right in itertools.permutations(snails, 2):
+        left_copy = deepcopy(left)
+        right_copy = deepcopy(right)
+        this_snail = add_snails(left_copy, right_copy)
+        reduce_snail(this_snail)
+        best_so_far = max(best_so_far, this_snail.magnitude())
+    return best_so_far
+
+print(part_b())
