@@ -44,10 +44,7 @@ class Snail:
             successor_root = node.parent.right
             break
         
-        node = successor_root
-        while node.left is not None:
-            node = node.left
-        return node
+        return successor_root.leftmost()
 
     def predecessor_leaf_node(self):
         node = self
@@ -60,37 +57,24 @@ class Snail:
             successor_root = node.parent.left
             break
         
-        node = successor_root
-        while node.right is not None:
-            node = node.right
-        return node
+        return successor_root.rightmost()
 
-    def reduce(self) -> bool:
-        if self.depth >= 3:
-            if self.value is None:
-                if self.left.value is None:
-                    if self.right.value is None:
-                        self.right.left.value += self.left.right.value
-                    else: 
-                        self.right.value += self.left.right.value
-                    predecessor_leaf = self.predecessor_leaf_node()
-                    if predecessor_leaf is not None:
-                        predecessor_leaf.value += self.left.left.value
-                    self.left = self.make_child(0)
-                    return True
-                elif self.right.value is None:
-                    if self.left.value is None:
-                        self.left.right.value += self.right.left.value
-                    else:
-                        self.left.value += self.right.left.value
-                    successor_leaf = self.successor_leaf_node()
-                    if successor_leaf is not None:
-                        successor_leaf.value += self.right.right.value
-                    self.right = self.make_child(0)
-                    return True
-                else:
-                    return (self.left.reduce() or self.right.reduce())
-        if self.value is not None: # regular number
+    def leftmost(self):
+        if self.is_leaf:
+            return self
+        return self.left.leftmost()
+
+    def rightmost(self):
+        if self.is_leaf:
+            return self
+        return self.right.rightmost()
+
+    @property
+    def is_leaf(self):
+        return self.value is not None
+
+    def reduce(self) -> bool:  # returns whether a change took place.
+        if self.is_leaf:
             if self.value >= 10:
                 self.left = self.make_child(self.value // 2)
                 self.right = self.make_child(math.ceil(self.value/2))
@@ -98,7 +82,28 @@ class Snail:
                 return True
             return False
         else:
-            return (self.left.reduce() or self.right.reduce())
+            if self.left.reduce():
+                return True
+            if self.depth >= 3:
+                if not self.left.is_leaf:  # try exploding this first
+                    next_node_right = self.right.leftmost()
+                    next_node_right.value += self.left.right.value
+                    predecessor_leaf = self.predecessor_leaf_node()
+                    if predecessor_leaf is not None:
+                        predecessor_leaf.value += self.left.left.value
+                    self.left = self.make_child(0)
+                    return True
+                elif not self.right.is_leaf:
+                    next_node_left = self.left.rightmost()
+                    next_node_left.value += self.right.left.value
+                    successor_leaf = self.successor_leaf_node()
+                    if successor_leaf is not None:
+                        successor_leaf.value += self.right.right.value
+                    self.right = self.make_child(0)
+                    return True
+            if self.right.reduce():
+                return True
+            return False
 
     def __str__(self):
         if self.value is not None:
@@ -124,6 +129,7 @@ def reduce_snail(snail: Snail):
     keep_reducing = True
     while keep_reducing:
         keep_reducing = snail.reduce()
+
 
 def part_a():
     snails = get_snails()
